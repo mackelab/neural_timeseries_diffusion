@@ -1,0 +1,5 @@
+# @package _global_
+defaults:
+  - override /classifier: tycho_classifier
+
+ftde_experiment: self

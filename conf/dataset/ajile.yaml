@@ -1,0 +1,11 @@
+self: ajile
+filepath: "TODO"
+pat_id: EC07
+signal_length: 1001
+time_before_event: 2.0
+time_after_event: 2.0
+conditional_training: True
+
+lower_percentile: 25
+upper_percentile: 75
+iqr_factor: 5.0

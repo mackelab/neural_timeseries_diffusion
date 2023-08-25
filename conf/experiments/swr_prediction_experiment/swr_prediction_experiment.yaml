@@ -1,0 +1,4 @@
+# @package _global_
+swr_prediction_experiment:
+  channel: 0 # can be integer or list of integers
+  batch_size: 1000

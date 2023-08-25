@@ -1,0 +1,24 @@
+self: tycho_conditional
+filepath: "TODO"
+signal_length: 1000
+channels: # randomly selected
+  - 4
+  - 6
+  - 10
+  - 24
+  - 50
+  - 69
+  - 75
+  - 83
+  - 87
+  - 95
+  - 97
+  - 122
+session_one_start: 1007.11
+session_one_end: 1551.66
+session_two_start: 553.55
+session_two_end: 1098.10
+with_class_cond: True
+
+train_test_split: 0.8
+split_seed: 42

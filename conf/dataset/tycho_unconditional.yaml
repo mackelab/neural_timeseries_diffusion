@@ -1,0 +1,9 @@
+self: tycho_unconditional
+filepath: "TODO"
+signal_length: 1000
+channels: all
+session_one_start: 0.0
+session_one_end: 10000.0
+
+train_test_split: 0.8
+split_seed: 42

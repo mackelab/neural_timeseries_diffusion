@@ -1,0 +1,19 @@
+self: lconv
+signal_channel: 3
+time_dim: 16
+cond_channel: 0
+hidden_channel: 64 # 3 * 64
+in_kernel_size: 32
+out_kernel_size: 32
+slconv_kernel_size: 64
+num_scales: 5
+decay_min: 1.0
+decay_max: 4.0
+heads: 3
+in_mask_mode: full
+mid_mask_mode: full
+out_mask_mode: full
+activation_type: gelu
+norm_type: batch_norm
+padding_mode: zeros
+use_fft_conv: False

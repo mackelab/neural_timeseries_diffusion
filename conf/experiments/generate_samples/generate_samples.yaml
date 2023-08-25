@@ -1,0 +1,4 @@
+# @package _global_
+generate_samples:
+  num_samples: 0
+  batch_size: 100

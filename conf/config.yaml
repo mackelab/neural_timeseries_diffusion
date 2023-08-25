@@ -1,0 +1,8 @@
+defaults:
+  - base: wandb_default
+  - dataset: ner
+  - network: lconv_ner
+  - diffusion_kernel: white_noise
+  - diffusion: diffusion_quad_500
+  - optimizer: base_optimizer
+  - classifier: no_classifier

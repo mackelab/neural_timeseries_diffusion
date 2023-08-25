@@ -1,0 +1,7 @@
+lr: 0.0004
+weight_decay: 0.01
+num_epochs: 100
+train_batch_size: 32
+scheduler_milestones: # Large milestone to avoid using scheduler. 
+  - 1000000
+scheduler_gamma: 1.0

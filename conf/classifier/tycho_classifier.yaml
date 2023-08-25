@@ -1,0 +1,10 @@
+num_runs: 5
+train_batch_size: 32
+test_batch_size: 128
+epochs: 20
+learning_rate: 0.0001
+weight_decay: 0.01
+
+in_channel: 12
+kernel_size: 29
+hidden_channel: 20

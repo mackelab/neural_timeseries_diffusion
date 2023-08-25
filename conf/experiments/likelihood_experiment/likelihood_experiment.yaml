@@ -1,0 +1,3 @@
+# @package _global_
+likelihood_experiment:
+  batch_size: 300

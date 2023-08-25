@@ -1,0 +1,4 @@
+schedule: quad
+start_beta: 0.0001
+end_beta: 0.06
+diffusion_steps: 500

@@ -1,0 +1,4 @@
+diffusion_steps: 500
+start_beta: -1.0 # not needed for cosine
+end_beta: -1.0 # not needed for cosine
+schedule: cosine 

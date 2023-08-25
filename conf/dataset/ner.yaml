@@ -1,0 +1,8 @@
+self: ner
+filepath: "../data"
+patient_id: "S02"
+signal_length: 260
+with_time_emb: True
+cond_time_dim: 32
+train_test_split: 1.0
+split_seed: 0

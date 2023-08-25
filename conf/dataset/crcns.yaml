@@ -1,0 +1,13 @@
+self: crcns
+filepath: "TODO"
+signal_length: 1200
+sessions: # Session2 only contains one type of LFP signal instead of three!
+  - Session1_PETHphaseLocking
+  - Session3_SleepAfterRun
+lfp_types:
+  - HC_LFP
+  - PFC_LFP
+  - THAL_LFP
+
+train_test_split: 0.8
+split_seed: 42

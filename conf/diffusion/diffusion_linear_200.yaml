@@ -1,0 +1,4 @@
+diffusion_steps: 200
+start_beta: 0.0001
+end_beta: 0.07
+schedule: linear

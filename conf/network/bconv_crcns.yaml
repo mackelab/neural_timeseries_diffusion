@@ -1,0 +1,9 @@
+self: bconv
+signal_channel: 3
+time_dim: 16
+cond_channel: 0
+kernel_size: 101
+hidden_channel: 256
+norm_type: batch_norm
+activation_type: gelu
+padding_mode: zeros
