@@ -58,7 +58,7 @@ def norm_factory(norm_type, channel):
         raise NotImplementedError
 
 
-class SkipConv1d(nn.Conv1d):
+class SkipConv1d(nn.Module):
     """
     1D Convolutional layer with skip connection.
     """
@@ -74,10 +74,8 @@ class SkipConv1d(nn.Conv1d):
         groups=1,
         bias=True,
         padding_mode="zeros",
-        device=None,
-        dtype=None,
     ):
-        super().__init__(
+        self.conv = nn.Conv1d(
             in_channels,
             out_channels,
             kernel_size,
@@ -87,14 +85,12 @@ class SkipConv1d(nn.Conv1d):
             groups,
             bias,
             padding_mode,
-            device,
-            dtype,
         )
 
-        self.transposed_linear = TransposedLinear(in_channels, out_channels)
+        self.transposed_linear = nn.Conv1d(in_channels, out_channels, 1, bias=False)
 
     def forward(self, input):
-        return super().forward(input) + self.transposed_linear.forward(input)
+        return self.conv.forward(input) + self.transposed_linear.forward(input)
 
 
 class EfficientMaskedConv1d(nn.Module):
@@ -123,7 +119,7 @@ class EfficientMaskedConv1d(nn.Module):
                 padding_mode=padding_mode,
             )
         else:
-            self.layer = SparseConv1d(
+            self.layer = MaskedConv1d(
                 in_channels,
                 out_channels,
                 kernel_size,
@@ -136,7 +132,7 @@ class EfficientMaskedConv1d(nn.Module):
         return self.layer.forward(x)
 
 
-class SparseConv1d(nn.Module):
+class MaskedConv1d(nn.Module):
     """
     1D Convolutional layer with masking.
     """
