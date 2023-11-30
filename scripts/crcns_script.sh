@@ -1,10 +1,8 @@
 #!/bin/sh
 
-echo $1
-
 python3 ../ntd/train_diffusion_model.py \
-    base.experiment=$1_crcns \
-    base.tag=$1_lconv_wn \
+    base.experiment=crcns_experiment \
+    base.tag=lconv_wn \
     dataset=crcns \
     diffusion=diffusion_quad_500 \
     diffusion_kernel=white_noise \

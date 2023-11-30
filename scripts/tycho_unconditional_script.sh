@@ -1,10 +1,8 @@
 #!/bin/sh
 
-echo $1
-
 python3 ../ntd/train_diffusion_model.py \
-    base.experiment=$1_brain \
-    base.tag=$1_ou_large_tycho_lconv \
+    base.experiment=tycho_unconditional_experiment \
+    base.tag=lconv_ou \
     dataset=tycho_unconditional \
     diffusion=diffusion_quad_500 \
     diffusion_kernel=ou10 \

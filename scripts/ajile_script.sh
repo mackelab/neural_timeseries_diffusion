@@ -1,14 +1,12 @@
 #!/bin/sh
 
-echo $1
-
 kernel="ou10"
 lr=0.001
 num_epochs=500
 
 python3 ../ntd/train_diffusion_model.py \
-    base.experiment=$1_ajile_experiment \
-    base.tag=$1_lconv_ou_ec01 \
+    base.experiment=ajile_experiment \
+    base.tag=lconv_ou_ec01 \
     dataset=ajile \
     dataset.pat_id=EC01 \
     diffusion=diffusion_quad_50 \
@@ -22,8 +20,8 @@ python3 ../ntd/train_diffusion_model.py \
     +experiments/ajile_experiment=ajile_experiment
 
 python3 ../ntd/train_diffusion_model.py \
-    base.experiment=$1_ajile_experiment \
-    base.tag=$1_lconv_ou_ec02 \
+    base.experiment=ajile_experiment \
+    base.tag=lconv_ou_ec02 \
     dataset=ajile \
     dataset.pat_id=EC02 \
     diffusion=diffusion_quad_50 \
@@ -37,8 +35,8 @@ python3 ../ntd/train_diffusion_model.py \
     +experiments/ajile_experiment=ajile_experiment
 
 python3 ../ntd/train_diffusion_model.py \
-    base.experiment=$1_ajile_experiment \
-    base.tag=$1_lconv_ou_ec03 \
+    base.experiment=ajile_experiment \
+    base.tag=lconv_ou_ec03 \
     dataset=ajile \
     dataset.pat_id=EC03 \
     diffusion=diffusion_quad_50 \
@@ -52,8 +50,8 @@ python3 ../ntd/train_diffusion_model.py \
     +experiments/ajile_experiment=ajile_experiment
 
 python3 ../ntd/train_diffusion_model.py \
-    base.experiment=$1_ajile_experiment \
-    base.tag=$1_lconv_ou_ec04 \
+    base.experiment=ajile_experiment \
+    base.tag=lconv_ou_ec04 \
     dataset=ajile \
     dataset.pat_id=EC04 \
     diffusion=diffusion_quad_50 \
@@ -67,8 +65,8 @@ python3 ../ntd/train_diffusion_model.py \
     +experiments/ajile_experiment=ajile_experiment
 
 python3 ../ntd/train_diffusion_model.py \
-    base.experiment=$1_ajile_experiment \
-    base.tag=$1_lconv_ou_ec05 \
+    base.experiment=ajile_experiment \
+    base.tag=lconv_ou_ec05 \
     dataset=ajile \
     dataset.pat_id=EC05 \
     diffusion=diffusion_quad_50 \
@@ -82,8 +80,8 @@ python3 ../ntd/train_diffusion_model.py \
     +experiments/ajile_experiment=ajile_experiment
 
 python3 ../ntd/train_diffusion_model.py \
-    base.experiment=$1_ajile_experiment \
-    base.tag=$1_lconv_ou_ec06 \
+    base.experiment=ajile_experiment \
+    base.tag=lconv_ou_ec06 \
     dataset=ajile \
     dataset.pat_id=EC06 \
     diffusion=diffusion_quad_50 \
@@ -97,8 +95,8 @@ python3 ../ntd/train_diffusion_model.py \
     +experiments/ajile_experiment=ajile_experiment
 
 python3 ../ntd/train_diffusion_model.py \
-    base.experiment=$1_ajile_experiment \
-    base.tag=$1_lconv_ou_ec07 \
+    base.experiment=ajile_experiment \
+    base.tag=lconv_ou_ec07 \
     dataset=ajile \
     dataset.pat_id=EC07 \
     diffusion=diffusion_quad_50 \
@@ -112,8 +110,8 @@ python3 ../ntd/train_diffusion_model.py \
     +experiments/ajile_experiment=ajile_experiment
 
 python3 ../ntd/train_diffusion_model.py \
-    base.experiment=$1_ajile_experiment \
-    base.tag=$1_lconv_ou_ec08 \
+    base.experiment=ajile_experiment \
+    base.tag=lconv_ou_ec08 \
     dataset=ajile \
     dataset.pat_id=EC08 \
     diffusion=diffusion_quad_50 \
@@ -127,8 +125,8 @@ python3 ../ntd/train_diffusion_model.py \
     +experiments/ajile_experiment=ajile_experiment
 
 python3 ../ntd/train_diffusion_model.py \
-    base.experiment=$1_ajile_experiment \
-    base.tag=$1_lconv_ou_ec09 \
+    base.experiment=ajile_experiment \
+    base.tag=lconv_ou_ec09 \
     dataset=ajile \
     dataset.pat_id=EC09 \
     diffusion=diffusion_quad_50 \
@@ -142,8 +140,8 @@ python3 ../ntd/train_diffusion_model.py \
     +experiments/ajile_experiment=ajile_experiment
 
 python3 ../ntd/train_diffusion_model.py \
-    base.experiment=$1_ajile_experiment \
-    base.tag=$1_lconv_ou_ec10 \
+    base.experiment=ajile_experiment \
+    base.tag=lconv_ou_ec10 \
     dataset=ajile \
     dataset.pat_id=EC10 \
     diffusion=diffusion_quad_50 \
@@ -157,8 +155,8 @@ python3 ../ntd/train_diffusion_model.py \
     +experiments/ajile_experiment=ajile_experiment
 
 python3 ../ntd/train_diffusion_model.py \
-    base.experiment=$1_ajile_experiment \
-    base.tag=$1_lconv_ou_ec11 \
+    base.experiment=ajile_experiment \
+    base.tag=lconv_ou_ec11 \
     dataset=ajile \
     dataset.pat_id=EC11 \
     diffusion=diffusion_quad_50 \
@@ -172,8 +170,8 @@ python3 ../ntd/train_diffusion_model.py \
     +experiments/ajile_experiment=ajile_experiment
 
 python3 ../ntd/train_diffusion_model.py \
-    base.experiment=$1_ajile_experiment \
-    base.tag=$1_lconv_ou_ec12 \
+    base.experiment=ajile_experiment \
+    base.tag=lconv_ou_ec12 \
     dataset=ajile \
     dataset.pat_id=EC12 \
     diffusion=diffusion_quad_50 \
@@ -185,3 +183,5 @@ python3 ../ntd/train_diffusion_model.py \
     network.signal_channel=116 \
     network.cond_channel=232 \
     +experiments/ajile_experiment=ajile_experiment
+
+echo "DONE"

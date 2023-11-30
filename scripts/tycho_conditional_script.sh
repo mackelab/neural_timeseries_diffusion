@@ -1,10 +1,8 @@
 #!/bin/sh
 
-echo $1
-
 python3 ../ntd/train_diffusion_model.py \
-    base.experiment=$1_conditional_brain \
-    base.tag=$1_wn_conditional_brain_lconv_ddpm \
+    base.experiment=tycho_conditional_experiment \
+    base.tag=lconv_wn \
     dataset=tycho_conditional \
     diffusion=diffusion_linear_1000 \
     diffusion_kernel=white_noise \
@@ -20,8 +18,8 @@ python3 ../ntd/train_diffusion_model.py \
 
 # Baseline
 python3 ../ntd/utils/classifier_utils.py \
-    base.experiment=$1_conditional_brain \
-    base.tag=$1_conditional_brain_raw \
+    base.experiment=ycho_conditional_experiment \
+    base.tag=raw_classifier \
     dataset=tycho_conditional \
     classifier=tycho_classifier
 

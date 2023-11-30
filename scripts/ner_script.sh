@@ -1,10 +1,8 @@
 #!/bin/sh
 
-echo $1
-
 python3 ../ntd/train_diffusion_model.py \
-    base.experiment=$1_inria \
-    base.tag=$1_inria_wn_lconv_recover \
+    base.experiment=ner_experiment \
+    base.tag=lconv_wn \
     dataset=ner \
     diffusion=diffusion_linear_1000 \
     diffusion_kernel=white_noise \
