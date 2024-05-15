@@ -18,7 +18,7 @@ python3 ../ntd/train_diffusion_model.py \
 
 # Baseline
 python3 ../ntd/utils/classifier_utils.py \
-    base.experiment=ycho_conditional_experiment \
+    base.experiment=tycho_conditional_experiment \
     base.tag=raw_classifier \
     dataset=tycho_conditional \
     classifier=tycho_classifier

@@ -4,7 +4,7 @@ python3 ../ntd/train_diffusion_model.py \
     base.experiment=crcns_experiment \
     base.tag=lconv_wn \
     dataset=crcns \
-    diffusion=diffusion_quad_500 \
+    diffusion=diffusion_linear_200 \
     diffusion_kernel=white_noise \
     network=lconv_crcns \
     optimizer=base_optimizer \

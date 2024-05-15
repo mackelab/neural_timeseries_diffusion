@@ -7,8 +7,8 @@ in_kernel_size: 32
 out_kernel_size: 32
 slconv_kernel_size: 64
 num_scales: 5
-decay_min: 1.0
-decay_max: 4.0
+decay_min: 2.0
+decay_max: 2.0
 heads: 3
 in_mask_mode: full
 mid_mask_mode: full

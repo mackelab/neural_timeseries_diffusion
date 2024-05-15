@@ -3,6 +3,6 @@ defaults:
   - dataset: ner
   - network: lconv_ner
   - diffusion_kernel: white_noise
-  - diffusion: diffusion_quad_500
+  - diffusion: diffusion_linear_200
   - optimizer: base_optimizer
   - classifier: no_classifier
