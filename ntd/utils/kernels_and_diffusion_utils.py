@@ -3,7 +3,6 @@ import torch
 import torch.nn as nn
 from einops import repeat
 from scipy.linalg import cholesky_banded, solve_banded
-from torch.utils.data import DataLoader
 
 ### Kernels
 
@@ -175,50 +174,142 @@ def generate_samples(diffusion, total_num_samples, batch_size, cond=None):
             batch_cond = cond[running_batch_count : running_batch_count + bs]
             batch_cond = batch_cond.to(diffusion.device)
 
-        samples, _history = diffusion.sample(
+        samples = diffusion.sample(
             bs,
             cond=batch_cond,
         )
+        samples = samples.cpu()
         samples_ls.append(samples)
         running_batch_count += bs
 
-    all_samples = torch.cat(samples_ls, dim=0).cpu()
-    return all_samples
+    return torch.cat(samples_ls, dim=0)
 
 
-def single_channelwise_imputations(diffusion, test_dataset, channel=0, batch_size=100):
+def impute_samples(diffusion, samples, mask, batch_size, cond=None):
     """
-    Perform single channelwise imputations on a test dataset.
-    The imputation is performed via inpainting. Conditional information is used if available.
+    Impute missing values in samples using a diffusion model.
 
     Args:
         diffusion: Trained diffusion model.
-        test_dataset: Test dataset.
-        channel: Channels to impute. Either int or list of ints.
-        batch_size: Batch size to use for imputations.
+        samples: Tensor of samples with missing values.
+        mask: Binary task tensor indicating missing values (0 for missing, 1 for observed).
+        batch_size: Batch size to use for imputation.
+        cond: Conditioning information. Can either be the same shape as samples or a single
+            condition to be repeated.
 
     Returns:
         Imputed samples.
     """
 
-    test_loader = DataLoader(test_dataset, batch_size=batch_size)
+    batch_size_ls = [batch_size] * (samples.shape[0] // batch_size)
+    if (remainder := samples.shape[0] % batch_size) > 0:
+        batch_size_ls += [remainder]
+    print(batch_size_ls)
 
-    channel_mask = torch.ones(
-        1, test_dataset.dataset.num_signal_channel, test_dataset.dataset.signal_length
-    )
-    channel_mask[:, channel, :] = 0.0
+    if len(mask.shape) == 2:
+        mask = repeat(mask, "c t -> b c t", b=samples.shape[0])
+    elif len(mask.shape) == 3:
+        assert mask.shape[0] == samples.shape[0]
+    else:
+        raise ValueError("Mask must be a 2D or 3D tensor!")
 
-    res_ls = []
-    for batch in test_loader:
-        sig = batch["signal"]
-        try:
-            cond = batch["cond"]
-            cond = cond.to(diffusion.device)
-        except KeyError:
-            cond = None
-        res = diffusion.impute(
-            sig.to(diffusion.device), channel_mask.to(diffusion.device), cond=cond
+    if cond is not None:
+        if len(cond.shape) == 2:
+            cond = repeat(cond, "c t -> b c t", b=samples.shape[0])
+        elif len(cond.shape) == 3:
+            assert cond.shape[0] == samples.shape[0]
+        else:
+            raise ValueError("Cond must be a 2D or 3D tensor!")
+
+    imputed_samples_ls = []
+    running_batch_count = 0
+    for bs in batch_size_ls:
+        if cond is None:
+            batch_cond = cond
+        else:
+            batch_cond = cond[running_batch_count : running_batch_count + bs]
+            batch_cond = batch_cond.to(diffusion.device)
+
+        imputed_samples = diffusion.impute(
+            samples[running_batch_count : running_batch_count + bs].to(
+                diffusion.device
+            ),
+            mask[running_batch_count : running_batch_count + bs].to(diffusion.device),
+            cond=batch_cond,
         )
-        res_ls.append(res)
+        imputed_samples = imputed_samples.cpu()
+        imputed_samples_ls.append(imputed_samples)
+        running_batch_count += bs
 
-    return torch.cat(res_ls, dim=0).cpu()
+    return torch.cat(imputed_samples_ls, dim=0)
+
+
+def impute_single_sample(
+    diffusion, sample, mask, num_imputations, batch_size=None, cond=None
+):
+    """
+    Impute missing values in a single sample using a diffusion model.
+
+    Args:
+        diffusion: Trained diffusion model.
+        sample: Single sample with missing values.
+        mask: Binary task tensor indicating missing values (0 for missing, 1 for observed).
+        num_imputations: Number of imputations to perform for the single sample.
+        batch_size: Batch size to use for imputation.
+        cond: Conditioning information. Can either be the same shape as sample or a single
+            condition to be repeated.
+
+    Returns:
+        Imputed samples.
+    """
+
+    assert len(sample.shape) == 2
+
+    sample = repeat(sample, "c t -> b c t", b=num_imputations)
+
+    if batch_size is None:
+        batch_size = num_imputations
+    return impute_samples(diffusion, sample, mask, batch_size, cond)
+
+
+def impute_dataset(diffusion, dataset, mask, batch_size=100):
+    """
+    Impute missing values for each sample in a given dataset using a diffusion model.
+
+    Args:
+        diffusion: Trained diffusion model.
+        dataset: Dataset of samples with missing values.
+        mask: Binary task tensor indicating missing values (0 for missing, 1 for observed).
+              Same mask will be used for all samples in the dataset.
+        batch_size: Batch size to use for imputation.
+
+    Returns:
+        Imputed samples.
+    """
+
+    samples = torch.stack([dic["signal"] for dic in dataset])
+    try:
+        cond = torch.stack([dic["cond"] for dic in dataset])
+    except KeyError:
+        cond = None
+    return impute_samples(diffusion, samples, mask, batch_size, cond)
+
+
+def impute_dataset_channelwise(diffusion, dataset, channel=[0], batch_size=100):
+    """
+    Impute whole channels for each sample in a given dataset using a diffusion model.
+
+    Args:
+        diffusion: Trained diffusion model.
+        test_dataset: Dataset of samples with missing channels.
+        channel: List of channels to impute.
+        batch_size: Batch size to use for imputation.
+
+    Returns:
+        Imputed samples.
+    """
+
+    example_sample = dataset[0]["signal"]  # get the shape
+    channel_mask = torch.ones_like(example_sample)
+    channel_mask[channel] = 0.0
+    return impute_dataset(diffusion, dataset, channel_mask, batch_size)

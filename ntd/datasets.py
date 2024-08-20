@@ -6,7 +6,6 @@ import xarray as xr
 from scipy import io
 from torch.utils.data.dataset import Dataset
 
-from ntd.networks import SinusoidalPosEmb
 from ntd.utils.utils import standardize_array
 
 ### Datasets
@@ -199,26 +198,17 @@ class NER_BCI(Dataset):
     def __init__(
         self,
         patient_id,
-        with_time_emb=False,
-        cond_time_dim=32,
         filepath=None,
     ):
         super().__init__()
 
-        self.with_time_emb = with_time_emb
-        self.cond_time_dim = cond_time_dim
         self.signal_length = 260
         self.num_channels = 56
 
         temp_array = np.load(os.path.join(filepath, f"{patient_id}_data.npy"))
         self.data_array = standardize_array(temp_array, ax=(0, 2))
 
-        temp_emb = SinusoidalPosEmb(cond_time_dim).forward(
-            torch.arange(self.signal_length)
-        )
-        self.emb = torch.transpose(temp_emb, 0, 1)
-
-    def __getitem__(self, index, cond_channel=None):
+    def __getitem__(self, index):
         return_dict = {}
         return_dict["signal"] = torch.from_numpy(np.float32(self.data_array[index]))
         cond = self.get_cond()
@@ -227,10 +217,7 @@ class NER_BCI(Dataset):
         return return_dict
 
     def get_cond(self):
-        cond = None
-        if self.with_time_emb:
-            cond = self.emb
-        return cond
+        return None
 
     def __len__(self):
         return len(self.data_array)
@@ -321,11 +308,11 @@ class AJILE_LFP(Dataset):
         self.train_mean = train_mean
         self.train_std = train_std
 
-    def __getitem__(self, index, cond_channel=None):
+    def __getitem__(self, index):
         return_dict = {}
         return_dict["signal"] = torch.from_numpy(np.float32(self.data_array[index]))
         return_dict["label"] = torch.tensor([np.float32(self.label_array[index])])
-        cond = self.get_cond(index=index, cond_channel=cond_channel)
+        cond = self.get_cond(index=index)
         if cond is not None and self.masked_training:
             return_dict["mask"] = torch.from_numpy(np.float32(self.mask_array[index]))
             cond[self.num_channels :] *= return_dict["mask"]
@@ -337,19 +324,18 @@ class AJILE_LFP(Dataset):
             return_dict["mask"] = torch.from_numpy(np.float32(self.mask_array[index]))
         return return_dict
 
-    def get_cond(self, index=0, cond_channel=None):
+    def get_cond(self, index=0):
         cond = None
         if self.conditional_training:
             condition_mask = torch.zeros(self.num_channels, self.signal_length)
-            if cond_channel is None:
-                num_cond_channels = np.random.randint(self.num_channels + 1)
-                cond_channel = list(
-                    np.random.choice(
-                        self.num_channels,
-                        size=num_cond_channels,
-                        replace=False,
-                    )
+            num_cond_channels = np.random.randint(self.num_channels + 1)
+            cond_channel = list(
+                np.random.choice(
+                    self.num_channels,
+                    size=num_cond_channels,
+                    replace=False,
                 )
+            )
             # Cond channels are indicated by 1.0
             condition_mask[cond_channel, :] = 1.0
             condition_signal = (

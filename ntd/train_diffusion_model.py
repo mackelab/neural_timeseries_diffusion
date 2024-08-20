@@ -28,7 +28,7 @@ from ntd.datasets import (
 )
 from ntd.diffusion_model import Diffusion, Trainer
 from ntd.likelihood_computation import likelihood_experiment, long_likelihood_experiment
-from ntd.networks import BaseConv, LongConv
+from ntd.networks import CatConv, AdaConv
 from ntd.utils.classifier_utils import (
     TensorLabelDataset,
     train_and_test_classifier,
@@ -37,7 +37,7 @@ from ntd.utils.kernels_and_diffusion_utils import (
     OUProcess,
     WhiteNoiseProcess,
     generate_samples,
-    single_channelwise_imputations,
+    impute_dataset_channelwise,
 )
 from ntd.utils.utils import config_saver, count_parameters
 
@@ -92,20 +92,9 @@ def init_diffusion_model(cfg):
         raise NotImplementedError
 
     diffusion_steps = cfg.diffusion.diffusion_steps
-    if cfg.network.self == "bconv":
-        network = BaseConv(
-            signal_length=cfg.dataset.signal_length,
-            signal_channel=cfg.network.signal_channel,
-            time_dim=cfg.network.time_dim,
-            cond_channel=cfg.network.cond_channel,
-            kernel_size=cfg.network.kernel_size,
-            hidden_channel=cfg.network.hidden_channel,
-            norm_type=cfg.network.norm_type,
-            activation_type=cfg.network.activation_type,
-            padding_mode=cfg.network.padding_mode,
-        )
-    elif cfg.network.self == "lconv":
-        network = LongConv(
+
+    if cfg.network.self == "cat_conv":
+        network = CatConv(
             signal_length=cfg.dataset.signal_length,
             signal_channel=cfg.network.signal_channel,
             time_dim=cfg.network.time_dim,
@@ -115,14 +104,26 @@ def init_diffusion_model(cfg):
             out_kernel_size=cfg.network.out_kernel_size,
             slconv_kernel_size=cfg.network.slconv_kernel_size,
             num_scales=cfg.network.num_scales,
-            decay_min=cfg.network.decay_min,
-            decay_max=cfg.network.decay_max,
             heads=cfg.network.heads,
-            in_mask_mode=cfg.network.in_mask_mode,
-            mid_mask_mode=cfg.network.mid_mask_mode,
-            out_mask_mode=cfg.network.out_mask_mode,
-            activation_type=cfg.network.activation_type,
-            norm_type=cfg.network.norm_type,
+            num_blocks=cfg.network.num_blocks,
+            num_off_diag=cfg.network.num_off_diag,
+            padding_mode=cfg.network.padding_mode,
+            use_fft_conv=cfg.network.use_fft_conv,
+            use_pos_emb=cfg.network.use_pos_emb,
+        )
+    elif cfg.network.self == "ada_conv":
+        network = AdaConv(
+            signal_length=cfg.dataset.signal_length,
+            signal_channel=cfg.network.signal_channel,
+            cond_dim=cfg.network.cond_dim,
+            hidden_channel=cfg.network.hidden_channel,
+            in_kernel_size=cfg.network.in_kernel_size,
+            out_kernel_size=cfg.network.out_kernel_size,
+            slconv_kernel_size=cfg.network.slconv_kernel_size,
+            num_scales=cfg.network.num_scales,
+            num_blocks=cfg.network.num_blocks,
+            num_off_diag=cfg.network.num_off_diag,
+            use_pos_emb=cfg.network.use_pos_emb,
             padding_mode=cfg.network.padding_mode,
             use_fft_conv=cfg.network.use_fft_conv,
         )
@@ -177,8 +178,6 @@ def init_dataset(cfg):
     elif cfg.dataset.self == "ner":
         data_set = NER_BCI(
             patient_id=cfg.dataset.patient_id,
-            with_time_emb=cfg.dataset.with_time_emb,
-            cond_time_dim=cfg.dataset.cond_time_dim,
             filepath=cfg.dataset.filepath,
         )
     elif cfg.dataset.self == "crcns":
@@ -344,9 +343,9 @@ def swr_prediction_wrapper(cfg, diffusion, test_dataset):
         test_dataset: The test dataset.
     """
 
-    imputations_swr = single_channelwise_imputations(
+    imputations_swr = impute_dataset_channelwise(
         diffusion=diffusion,
-        test_dataset=test_dataset,
+        dataset=test_dataset,
         channel=cfg.swr_prediction_experiment.channel,
         batch_size=cfg.swr_prediction_experiment.batch_size,
     )
@@ -529,7 +528,7 @@ def training_and_eval_pipeline(cfg):
 
     log.info(OC.to_yaml(cfg))
     log.info("Config correct? Abort if not.")
-    time.sleep(10)
+    time.sleep(1)
     log.info("Start run.")
 
     if cfg.base.seed is not None:

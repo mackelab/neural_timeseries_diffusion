@@ -1,7 +1,7 @@
 defaults:
   - base: wandb_default
   - dataset: ner
-  - network: lconv_ner
+  - network: ada_conv_ner
   - diffusion_kernel: white_noise
   - diffusion: diffusion_linear_200
   - optimizer: base_optimizer

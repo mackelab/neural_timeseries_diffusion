@@ -2,6 +2,7 @@ import logging
 
 import numpy as np
 import torch
+from einops import repeat
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 
@@ -45,38 +46,29 @@ def conditional_ajile_imputation_experiment(
             mean diffusion imputation accuracy
     """
 
-    num_channels = train_dataset.dataset.num_channels
-    signal_length = train_dataset.dataset.signal_length
-    num_train_samples = len(train_dataset)
+    full_train_signals = torch.stack([dic["signal"] for dic in train_dataset])
+    full_train_labels = torch.cat([dic["label"] for dic in train_dataset])
+    num_train_samples, num_channels, signal_length = full_train_signals.shape
+
+    full_test_signals = torch.stack([dic["signal"] for dic in test_dataset])
+    full_test_labels = torch.cat([dic["label"] for dic in test_dataset])
 
     percent_cond_channels = 1.0 - percent_dropout_channels
     num_cond_channels = int(np.round(percent_cond_channels * num_channels))
 
     rng = np.random.default_rng(mask_seed)
     cond_channel = list(rng.choice(num_channels, size=num_cond_channels, replace=False))
+    print(cond_channel)
 
-    log.info(cond_channel)
+    imputation_mask = torch.zeros(num_channels, signal_length)
+    imputation_mask[cond_channel, :] = 1.0
 
-    train_dicts = [
-        train_dataset.dataset.__getitem__(index=i, cond_channel=cond_channel)
-        for i in train_dataset.indices
-    ]
-    full_train_signals = torch.stack([dic["signal"] for dic in train_dicts])
-    full_train_labels = torch.cat([dic["label"] for dic in train_dicts])
-    del train_dicts
-
-    assert (num_train_samples, num_channels, signal_length) == full_train_signals.shape
-
-    test_dicts = [
-        test_dataset.dataset.__getitem__(index=i, cond_channel=cond_channel)
-        for i in test_dataset.indices
-    ]
-    full_test_signals = torch.stack([dic["signal"] for dic in test_dicts])
-    full_test_cond = torch.stack([dic["cond"] for dic in test_dicts])
-    full_test_labels = torch.cat([dic["label"] for dic in test_dicts])
-    del test_dicts
-
-    train_mean, train_std = train_dataset.dataset.get_train_mean_and_std()
+    imputation_mask_repeat = repeat(
+        imputation_mask, "c t -> b c t", b=full_test_signals.shape[0]
+    )
+    full_test_cond = torch.cat(
+        [imputation_mask_repeat, imputation_mask_repeat * full_test_signals], dim=1
+    )
 
     X_test_cond_gen = generate_samples(
         diffusion=diffusion,
@@ -91,13 +83,19 @@ def conditional_ajile_imputation_experiment(
         + full_test_cond[:, num_channels:, :]
     )
 
+    train_mean, train_std = train_dataset.dataset.get_train_mean_and_std()
+
+    # Unstandardize imputed signal
+    X_test_imputed_uns = (X_test_imputed * train_std) + train_mean
+
     # Recover standardized full signals
     full_train_signals_uns = (full_train_signals * train_std) + train_mean
     full_test_signals_uns = (full_test_signals * train_std) + train_mean
     # Zero out channels in recovered signal
-    zero_test_signals_uns = full_test_signals_uns * full_test_cond[:, :num_channels, :]
-    # Unstandardize imputed signal
-    X_test_imputed_uns = (X_test_imputed * train_std) + train_mean
+    mean_test_signals_uns = (
+        full_test_signals_uns * full_test_cond[:, :num_channels, :]
+        + (1.0 - full_test_cond[:, :num_channels, :]) * train_mean
+    )
 
     def rf_np_reshape(tensor):
         return tensor.numpy().reshape(tensor.shape[0], -1)
@@ -108,7 +106,7 @@ def conditional_ajile_imputation_experiment(
     log.info(f"Start RF training and eval on {n_folds} folds")
 
     full_test_accs = np.zeros(n_folds)
-    full_zero_accs = np.zeros(n_folds)
+    full_mean_accs = np.zeros(n_folds)
     full_impu_accs = np.zeros(n_folds)
     rng_rf = np.random.default_rng(mask_seed)
     train_perm = rng_rf.permutation(num_train_samples)
@@ -137,11 +135,11 @@ def conditional_ajile_imputation_experiment(
         )
         full_test_accs[idx] = full_test_accuracy
 
-        zero_fill_test_accuracy = accuracy_score(
+        mean_fill_test_accuracy = accuracy_score(
             full_test_labels.numpy(),
-            clf.predict(rf_np_reshape(zero_test_signals_uns)),
+            clf.predict(rf_np_reshape(mean_test_signals_uns)),
         )
-        full_zero_accs[idx] = zero_fill_test_accuracy
+        full_mean_accs[idx] = mean_fill_test_accuracy
 
         imputation_test_accuracy = accuracy_score(
             full_test_labels.numpy(),
@@ -150,12 +148,12 @@ def conditional_ajile_imputation_experiment(
         full_impu_accs[idx] = imputation_test_accuracy
 
     log.info(full_test_accs)
-    log.info(full_zero_accs)
+    log.info(full_mean_accs)
     log.info(full_impu_accs)
 
     return (
         np.mean(full_test_accs),
-        np.mean(full_zero_accs),
+        np.mean(full_mean_accs),
         np.mean(full_impu_accs),
     )
 

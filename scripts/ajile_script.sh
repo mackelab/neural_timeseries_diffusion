@@ -6,12 +6,12 @@ num_epochs=500
 
 python3 ../ntd/train_diffusion_model.py \
     base.experiment=ajile_experiment \
-    base.tag=lconv_ou_ec01 \
+    base.tag=conv_ou_ec01 \
     dataset=ajile \
     dataset.pat_id=EC01 \
     diffusion=diffusion_quad_50 \
     diffusion_kernel=${kernel} \
-    network=lconv_ajile \
+    network=cat_conv_ajile \
     optimizer=base_optimizer \
     optimizer.lr=${lr} \
     optimizer.num_epochs=${num_epochs} \
@@ -21,12 +21,12 @@ python3 ../ntd/train_diffusion_model.py \
 
 python3 ../ntd/train_diffusion_model.py \
     base.experiment=ajile_experiment \
-    base.tag=lconv_ou_ec02 \
+    base.tag=conv_ou_ec02 \
     dataset=ajile \
     dataset.pat_id=EC02 \
     diffusion=diffusion_quad_50 \
     diffusion_kernel=${kernel} \
-    network=lconv_ajile \
+    network=cat_conv_ajile \
     optimizer=base_optimizer \
     optimizer.lr=${lr} \
     optimizer.num_epochs=${num_epochs} \
@@ -36,12 +36,12 @@ python3 ../ntd/train_diffusion_model.py \
 
 python3 ../ntd/train_diffusion_model.py \
     base.experiment=ajile_experiment \
-    base.tag=lconv_ou_ec03 \
+    base.tag=conv_ou_ec03 \
     dataset=ajile \
     dataset.pat_id=EC03 \
     diffusion=diffusion_quad_50 \
     diffusion_kernel=${kernel} \
-    network=lconv_ajile \
+    network=cat_conv_ajile \
     optimizer=base_optimizer \
     optimizer.lr=${lr} \
     optimizer.num_epochs=${num_epochs} \
@@ -51,12 +51,12 @@ python3 ../ntd/train_diffusion_model.py \
 
 python3 ../ntd/train_diffusion_model.py \
     base.experiment=ajile_experiment \
-    base.tag=lconv_ou_ec04 \
+    base.tag=conv_ou_ec04 \
     dataset=ajile \
     dataset.pat_id=EC04 \
     diffusion=diffusion_quad_50 \
     diffusion_kernel=${kernel} \
-    network=lconv_ajile \
+    network=cat_conv_ajile \
     optimizer=base_optimizer \
     optimizer.lr=${lr} \
     optimizer.num_epochs=${num_epochs} \
@@ -66,12 +66,12 @@ python3 ../ntd/train_diffusion_model.py \
 
 python3 ../ntd/train_diffusion_model.py \
     base.experiment=ajile_experiment \
-    base.tag=lconv_ou_ec05 \
+    base.tag=conv_ou_ec05 \
     dataset=ajile \
     dataset.pat_id=EC05 \
     diffusion=diffusion_quad_50 \
     diffusion_kernel=${kernel} \
-    network=lconv_ajile \
+    network=cat_conv_ajile \
     optimizer=base_optimizer \
     optimizer.lr=${lr} \
     optimizer.num_epochs=${num_epochs} \
@@ -81,12 +81,12 @@ python3 ../ntd/train_diffusion_model.py \
 
 python3 ../ntd/train_diffusion_model.py \
     base.experiment=ajile_experiment \
-    base.tag=lconv_ou_ec06 \
+    base.tag=conv_ou_ec06 \
     dataset=ajile \
     dataset.pat_id=EC06 \
     diffusion=diffusion_quad_50 \
     diffusion_kernel=${kernel} \
-    network=lconv_ajile \
+    network=cat_conv_ajile \
     optimizer=base_optimizer \
     optimizer.lr=${lr} \
     optimizer.num_epochs=${num_epochs} \
@@ -96,12 +96,12 @@ python3 ../ntd/train_diffusion_model.py \
 
 python3 ../ntd/train_diffusion_model.py \
     base.experiment=ajile_experiment \
-    base.tag=lconv_ou_ec07 \
+    base.tag=conv_ou_ec07 \
     dataset=ajile \
     dataset.pat_id=EC07 \
     diffusion=diffusion_quad_50 \
     diffusion_kernel=${kernel} \
-    network=lconv_ajile \
+    network=cat_conv_ajile \
     optimizer=base_optimizer \
     optimizer.lr=${lr} \
     optimizer.num_epochs=${num_epochs} \
@@ -111,12 +111,12 @@ python3 ../ntd/train_diffusion_model.py \
 
 python3 ../ntd/train_diffusion_model.py \
     base.experiment=ajile_experiment \
-    base.tag=lconv_ou_ec08 \
+    base.tag=conv_ou_ec08 \
     dataset=ajile \
     dataset.pat_id=EC08 \
     diffusion=diffusion_quad_50 \
     diffusion_kernel=${kernel} \
-    network=lconv_ajile \
+    network=cat_conv_ajile \
     optimizer=base_optimizer \
     optimizer.lr=${lr} \
     optimizer.num_epochs=${num_epochs} \
@@ -126,12 +126,12 @@ python3 ../ntd/train_diffusion_model.py \
 
 python3 ../ntd/train_diffusion_model.py \
     base.experiment=ajile_experiment \
-    base.tag=lconv_ou_ec09 \
+    base.tag=conv_ou_ec09 \
     dataset=ajile \
     dataset.pat_id=EC09 \
     diffusion=diffusion_quad_50 \
     diffusion_kernel=${kernel} \
-    network=lconv_ajile \
+    network=cat_conv_ajile \
     optimizer=base_optimizer \
     optimizer.lr=${lr} \
     optimizer.num_epochs=${num_epochs} \
@@ -141,12 +141,12 @@ python3 ../ntd/train_diffusion_model.py \
 
 python3 ../ntd/train_diffusion_model.py \
     base.experiment=ajile_experiment \
-    base.tag=lconv_ou_ec10 \
+    base.tag=conv_ou_ec10 \
     dataset=ajile \
     dataset.pat_id=EC10 \
     diffusion=diffusion_quad_50 \
     diffusion_kernel=${kernel} \
-    network=lconv_ajile \
+    network=cat_conv_ajile \
     optimizer=base_optimizer \
     optimizer.lr=${lr} \
     optimizer.num_epochs=${num_epochs} \
@@ -156,12 +156,12 @@ python3 ../ntd/train_diffusion_model.py \
 
 python3 ../ntd/train_diffusion_model.py \
     base.experiment=ajile_experiment \
-    base.tag=lconv_ou_ec11 \
+    base.tag=conv_ou_ec11 \
     dataset=ajile \
     dataset.pat_id=EC11 \
     diffusion=diffusion_quad_50 \
     diffusion_kernel=${kernel} \
-    network=lconv_ajile \
+    network=cat_conv_ajile \
     optimizer=base_optimizer \
     optimizer.lr=${lr} \
     optimizer.num_epochs=${num_epochs} \
@@ -171,12 +171,12 @@ python3 ../ntd/train_diffusion_model.py \
 
 python3 ../ntd/train_diffusion_model.py \
     base.experiment=ajile_experiment \
-    base.tag=lconv_ou_ec12 \
+    base.tag=conv_ou_ec12 \
     dataset=ajile \
     dataset.pat_id=EC12 \
     diffusion=diffusion_quad_50 \
     diffusion_kernel=${kernel} \
-    network=lconv_ajile \
+    network=cat_conv_ajile \
     optimizer=base_optimizer \
     optimizer.lr=${lr} \
     optimizer.num_epochs=${num_epochs} \

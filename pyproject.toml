@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools", "setuptools_scm", "wheel"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "ntd"
+description = "diffusion models for neural time series data"
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [
+  {name = "Julius Vetter", email = "julius.vetter@uni-tuebingen.de" }
+]
+dynamic = ["version"]
+
+dependencies = [
+    "wandb",
+    "numpy<2.0.0", # https://github.com/pytorch/pytorch/issues/131668
+    "scikit-learn",
+    "scipy",
+    "hydra-core",
+    "torch",
+    "xarray",
+    "h5py",
+    "matplotlib",
+    "einops",
+    "pandas",
+    "mne",
+]
+
+[project.optional-dependencies]
+dev = ["jupyter"]
+test = ["pytest"]
+
+[project.urls]
+"Source" = "https://github.com/mackelab/neural_timeseries_diffusion"
+
+[tool.setuptools.packages.find]
+include = ["ntd"]
+namespaces = false

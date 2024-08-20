@@ -1,0 +1,15 @@
+self: cat_conv
+signal_channel: 3
+time_dim: 16
+cond_channel: 0
+hidden_channel: 64
+in_kernel_size: 32
+out_kernel_size: 32
+slconv_kernel_size: 64
+num_scales: 5
+heads: 3
+num_blocks: 3
+num_off_diag: 64
+padding_mode: zeros
+use_fft_conv: False
+use_pos_emb: False

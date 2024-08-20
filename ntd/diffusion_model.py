@@ -1,7 +1,5 @@
 import logging
-import math
 
-import numpy as np
 import torch
 import torch.nn as nn
 
@@ -15,7 +13,7 @@ class Diffusion(nn.Module):
     The model is initialized with a denoising network, a noise sampler and a way to compute Mahalanobis distances.
     Ususally, the noise sampler and the Mahalanobis distances will be based the same Gaussian Process.
 
-    The noise schedule can be either linear, quadratic or cosine.
+    The noise schedule can be either linear or quadratic.
     """
 
     def __init__(
@@ -48,8 +46,8 @@ class Diffusion(nn.Module):
                 torch.linspace(start_beta**0.5, end_beta**0.5, diffusion_time_steps)
                 ** 2.0
             )
-        elif self.schedule == "cosine":
-            _betas = cosine_betas(diffusion_time_steps)
+        else:
+            raise ValueError("Unknown schedule type.")
 
         self.register_buffer("betas", _betas)
         self.register_buffer("alphas", 1.0 - self.betas)
@@ -98,7 +96,6 @@ class Diffusion(nn.Module):
         sample_length=None,
         sampler=None,
         noise_type="alpha_beta",
-        history=False,
     ):
         if sampler is None:
             sampler = self.noise_sampler
@@ -121,8 +118,6 @@ class Diffusion(nn.Module):
                     sample_length,
                 )
             )
-
-            history_ls = [state] if history else None
 
             for i in range(self.diffusion_time_steps):
                 timestep = self.diffusion_time_steps - i - 1
@@ -159,39 +154,24 @@ class Diffusion(nn.Module):
                         sigma = self._get_alpha_beta(timestep)
                     state += sigma * samp
 
-                if history:
-                    history_ls.append(state)
-
-            return state, history_ls
+            return state
 
     # Mask: 1 -> sample is present, 0 sample is not present
-    def impute(
-        self, signal, mask, num_samples=None, cond=None, noise_type="alpha_beta"
-    ):
+    def impute(self, signal, mask, cond=None, noise_type="alpha_beta"):
         signal_batch, signal_channel, signal_length = signal.shape
-        if num_samples is None:
-            num_samples = signal_batch
-        else:
-            assert signal_batch == 1
-
-        mask_batch, mask_channel, mask_length = mask.shape
-        assert mask_batch == 1 or mask_batch == num_samples
-        assert signal_channel == mask_channel
-        assert signal_length == mask_length
+        assert signal_channel == self.network.signal_channel
+        assert signal.shape == mask.shape
 
         if cond is not None:
-            cond_batch, cond_channel, cond_length = cond.shape
-            assert cond_batch == 1 or cond_batch == num_samples
-            assert signal_channel == cond_channel
+            cond_batch, _cond_channel, cond_length = cond.shape
+            assert cond_batch == signal_batch
             assert signal_length == cond_length
-            if cond_batch == 1:
-                cond = cond.repeat(num_samples, 1, 1)
 
         self.eval()
         with torch.no_grad():
             state = self.noise_sampler.sample(
                 sample_shape=(
-                    num_samples,
+                    signal_batch,
                     self.network.signal_channel,
                     self.network.signal_length,
                 )
@@ -199,11 +179,11 @@ class Diffusion(nn.Module):
             for i in range(self.diffusion_time_steps):
                 timestep = self.diffusion_time_steps - i - 1
                 time_vector = torch.tensor([timestep], device=self.device).repeat(
-                    num_samples
+                    signal_batch
                 )
                 samp = self.noise_sampler.sample(
                     sample_shape=(
-                        num_samples,
+                        signal_batch,
                         self.network.signal_channel,
                         self.network.signal_length,
                     )
@@ -300,26 +280,3 @@ class Trainer:
             batch_loss.backward()
             self.optimizer.step()
         return batchwise_losses
-
-
-def cosine_betas(num_diffusion_timesteps, max_beta=0.999):
-    """
-    Cosine beta schedule for diffusion model.
-
-    Args:
-        num_diffusion_timesteps: Number of diffusion timesteps.
-        max_beta: Maximum beta value.
-
-    Returns:
-        Array of beta values.
-    """
-
-    def alpha_bar(time_step):
-        return math.cos((time_step + 0.008) / 1.008 * math.pi / 2) ** 2
-
-    betas = []
-    for i in range(num_diffusion_timesteps):
-        t1 = i / num_diffusion_timesteps
-        t2 = (i + 1) / num_diffusion_timesteps
-        betas.append(min(1 - alpha_bar(t2) / alpha_bar(t1), max_beta))
-    return torch.from_numpy(np.array(betas, dtype=np.float32))

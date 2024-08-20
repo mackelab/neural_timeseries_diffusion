@@ -1,0 +1,13 @@
+self: ada_conv
+signal_channel: 64 # only for P07
+cond_dim: 128 # only for P07
+hidden_channel: 8
+in_kernel_size: 53
+out_kernel_size: 53
+slconv_kernel_size: 53
+num_scales: 4
+num_blocks: 3
+num_off_diag: 8
+padding_mode: circular
+use_fft_conv: False
+use_pos_emb: False

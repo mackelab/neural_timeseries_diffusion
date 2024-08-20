@@ -6,7 +6,7 @@ run_experiment: True
 use_cuda_if_available: True
 
 wandb_mode: disabled
-wandb_project: time_series_diffusion
+wandb_project: TODO
 wandb_entity: TODO
 home_path: "TODO" # wandb home path
-save_path: null # Local saving
+save_path: null # local saving

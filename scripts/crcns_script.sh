@@ -2,11 +2,11 @@
 
 python3 ../ntd/train_diffusion_model.py \
     base.experiment=crcns_experiment \
-    base.tag=lconv_wn \
+    base.tag=conv_wn \
     dataset=crcns \
     diffusion=diffusion_linear_200 \
     diffusion_kernel=white_noise \
-    network=lconv_crcns \
+    network=cat_conv_crcns \
     optimizer=base_optimizer \
     optimizer.lr=0.0001 \
     optimizer.num_epochs=500 \

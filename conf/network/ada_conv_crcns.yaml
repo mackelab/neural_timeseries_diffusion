@@ -1,0 +1,13 @@
+self: ada_conv
+signal_channel: 3
+cond_dim: 0
+hidden_channel: 64
+in_kernel_size: 64
+out_kernel_size: 64
+slconv_kernel_size: 64
+num_scales: 5
+num_blocks: 4
+num_off_diag: 64
+padding_mode: circular
+use_fft_conv: False
+use_pos_emb: False

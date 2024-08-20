@@ -9,90 +9,6 @@ from einops import rearrange
 log = logging.getLogger(__name__)
 
 
-def activation_factory(activation):
-    """
-    Returns an instance of  the specified activation function.
-
-    Args:
-        activation: Name of the activation function.
-
-    Returns:
-        Instance of the specified activation function.
-    """
-
-    if activation == "identity":
-        return nn.Identity()
-    elif activation == "tanh":
-        return nn.Tanh()
-    elif activation == "relu":
-        return nn.ReLU()
-    elif activation == "gelu":
-        return nn.GELU()
-    elif activation == "leaky_relu":
-        return nn.LeakyReLU()
-    elif activation == "elu":
-        return nn.ELU()
-    elif activation == "silu":
-        return nn.SiLU()
-    elif activation == "sigmoid":
-        return nn.Sigmoid()
-    else:
-        raise NotImplementedError
-
-
-def norm_factory(norm_type, channel):
-    """
-    Returns an instance of the specified normalization layer.
-
-    Args:
-        norm_type: Name of the normalization layer.
-        channel: Number of channels of the input.
-
-    Returns:
-        Instance of the specified normalization layer.
-    """
-
-    if norm_type == "batch_norm":
-        return nn.BatchNorm1d(channel)
-    else:
-        raise NotImplementedError
-
-
-class SkipConv1d(nn.Module):
-    """
-    1D Convolutional layer with skip connection.
-    """
-
-    def __init__(
-        self,
-        in_channels,
-        out_channels,
-        kernel_size,
-        stride=1,
-        padding=0,
-        dilation=1,
-        groups=1,
-        bias=True,
-        padding_mode="zeros",
-    ):
-        self.conv = nn.Conv1d(
-            in_channels,
-            out_channels,
-            kernel_size,
-            stride,
-            padding,
-            dilation,
-            groups,
-            bias,
-            padding_mode,
-        )
-
-        self.transposed_linear = nn.Conv1d(in_channels, out_channels, 1, bias=False)
-
-    def forward(self, input):
-        return self.conv.forward(input) + self.transposed_linear.forward(input)
-
-
 class EfficientMaskedConv1d(nn.Module):
     """
     1D Convolutional layer with masking.
@@ -189,12 +105,12 @@ class SLConv(nn.Module):
         num_channels: Number of channels.
         num_scales: Number of scales.
             Overall length will be: kernel_size * (2 ** (num_scales - 1))
-        decay_min: Minimum decay.
-        decay_max: Maximum decay.
+        decay_min: Minimum decay. Advanced option.
+        decay_max: Maximum decay. Advanced option.
         heads: Number of heads.
         padding_mode: Padding mode. Either "zeros" or "circular".
         use_fft_conv: Whether to use FFT convolution.
-        interpolate_mode: Interpolation mode. Either "nearest" or "linear".
+        interpolate_mode: Interpolation mode. Either "nearest" or "linear". Advanced option.
     """
 
     def __init__(
@@ -313,9 +229,7 @@ class SLConv(nn.Module):
 def get_in_mask(
     signal_channel,
     hidden_channel,
-    time_channel,
-    cond_channel,
-    mode,
+    cond_channel=0,
 ):
     """
     Returns the input mask for the specified mode.
@@ -325,83 +239,52 @@ def get_in_mask(
         hidden_channel: Number of hidden channels.
         time_channel: Number of diffusion time embedding channels.
         cond_channel: Number of conditioning channels.
-        mode: Masking mode. Either "full" or "restricted".
-            "full" means that all connections are allowed.
-            "restricted" masking means that only connections between a given input signal channel
-            and its corresponding hidden channel are allowed.
-
     Returns:
         Input mask as torch tensor.
     """
-
-    if mode == "full":
-        np_mask = get_full(
-            signal_channel + cond_channel + time_channel,
-            signal_channel * hidden_channel,
-        )
-    elif mode == "restricted":
-        np_mask = np.concatenate(
-            (
-                get_restricted(signal_channel, 1, hidden_channel),
-                get_full(cond_channel + time_channel, signal_channel * hidden_channel),
-            ),
-            axis=1,
-        )
-    else:
-        raise NotImplementedError
+    np_mask = np.concatenate(
+        (
+            get_restricted(signal_channel, 1, hidden_channel),
+            get_full(cond_channel, signal_channel * hidden_channel),
+        ),
+        axis=1,
+    )
     return torch.from_numpy(np.float32(np_mask))
 
 
-def get_mid_mask(signal_channel, hidden_channel, mode, num_heads=1):
+def get_mid_mask(signal_channel, hidden_channel, off_diag, num_heads=1):
     """
     Returns the hidden mask for the specified mode.
 
     Args:
         signal_channel: Number of signal channels.
         hidden_channel: Number of hidden channels.
-        mode: Masking mode. Either "full" or "restricted" or "off_diag_<int>".
-            "full": All connections are allowed.
-            "restricted": Only connections between hidden channels associated with a given signal channel are allowed.
-            "off_diag_<int>": Like "restricted", but also allows <int> connections between sets of hidden channels.
+        off_diag: Number of off-diagonal interactions.
+        num_heads: Number of heads.
 
+    Returns:
+        Mid mask as torch tensor.
     """
-
-    if mode == "full":
-        np_mask = get_full(
-            signal_channel * hidden_channel, signal_channel * hidden_channel
-        )
-    elif mode == "restricted":
-        np_mask = get_restricted(signal_channel, hidden_channel, hidden_channel)
-    elif "off_diag_" in mode:
-        num_interaction = int(mode[len("off_diag_") :])
-        np_mask = np.maximum(
-            get_restricted(signal_channel, hidden_channel, hidden_channel),
-            get_sub_interaction(signal_channel, hidden_channel, num_interaction),
-        )
+    np_mask = np.maximum(
+        get_restricted(signal_channel, hidden_channel, hidden_channel),
+        get_sub_interaction(signal_channel, hidden_channel, off_diag),
+    )
 
     return torch.from_numpy(np.float32(np.repeat(np_mask, num_heads, axis=1)))
 
 
-def get_out_mask(signal_channel, hidden_channel, mode):
+def get_out_mask(signal_channel, hidden_channel):
     """
     Returns the output mask for the specified mode.
 
     Args:
         signal_channel: Number of signal channels.
         hidden_channel: Number of hidden channels.
-        mode: Masking mode. Either "full" or "restricted".
-            "full": All connections are allowed.
-            "restricted": Only connections between a given hidden channel
-            and its corresponding output signal channel are allowed.
 
     Returns:
         Output mask as torch tensor.
     """
-
-    if mode == "full":
-        np_mask = get_full(signal_channel * hidden_channel, signal_channel)
-    elif mode == "restricted":
-        np_mask = get_restricted(signal_channel, hidden_channel, 1)
+    np_mask = get_restricted(signal_channel, hidden_channel, 1)
     return torch.from_numpy(np.float32(np_mask))
 
 

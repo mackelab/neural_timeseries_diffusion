@@ -27,12 +27,12 @@ class BinaryTensorDataset(Dataset):
         if index < self.data_size_control:
             return {
                 "signal": self.data_tensor_control[index],
-                "label": torch.tensor([np.float32(0.0)]),
+                "label": torch.tensor([0.0]),
             }
         else:
             return {
                 "signal": self.data_tensor_target[index - self.data_size_control],
-                "label": torch.tensor([np.float32(1.0)]),
+                "label": torch.tensor([1.0]),
             }
 
     def __len__(self):
@@ -70,54 +70,45 @@ class GlobalAveragePoolingClassifier(nn.Module):
         in_channel=1,
         hidden_channel=20,
         kernel_size=29,
-        dilation=1,
     ):
         super().__init__()
         self.device = "cpu"
-        self.in_channel = in_channel
-        self.hidden_channel = hidden_channel
-        self.kernel_size = kernel_size
-        assert self.kernel_size % 2 == 1
-        self.dilation = dilation
-        self.padding = (self.dilation * (self.kernel_size - 1)) // 2
+        assert kernel_size % 2 == 1
+        padding = (kernel_size - 1) // 2
 
         self.conv_pool = nn.Sequential(
             nn.Conv1d(
-                in_channels=self.in_channel,
-                out_channels=self.hidden_channel,
-                kernel_size=self.kernel_size,
-                dilation=self.dilation,
-                padding=self.padding,
+                in_channels=in_channel,
+                out_channels=hidden_channel,
+                kernel_size=kernel_size,
+                padding=padding,
             ),
-            nn.BatchNorm1d(self.hidden_channel),
+            nn.BatchNorm1d(hidden_channel),
             nn.ReLU(),
             nn.Conv1d(
-                in_channels=self.hidden_channel,
-                out_channels=self.hidden_channel,
-                kernel_size=self.kernel_size,
-                dilation=self.dilation,
-                padding=self.padding,
+                in_channels=hidden_channel,
+                out_channels=hidden_channel,
+                kernel_size=kernel_size,
+                padding=padding,
             ),
-            nn.BatchNorm1d(self.hidden_channel),
+            nn.BatchNorm1d(hidden_channel),
             nn.ReLU(),
             nn.Conv1d(
-                in_channels=self.hidden_channel,
-                out_channels=self.hidden_channel,
-                kernel_size=self.kernel_size,
-                dilation=self.dilation,
-                padding=self.padding,
+                in_channels=hidden_channel,
+                out_channels=hidden_channel,
+                kernel_size=kernel_size,
+                padding=padding,
             ),
-            nn.BatchNorm1d(self.hidden_channel),
+            nn.BatchNorm1d(hidden_channel),
             nn.ReLU(),
         )
         self.final_conv = nn.Conv1d(
-            in_channels=self.hidden_channel,
-            out_channels=self.hidden_channel,
-            kernel_size=self.kernel_size,
-            dilation=self.dilation,
-            padding=self.padding,
+            in_channels=hidden_channel,
+            out_channels=hidden_channel,
+            kernel_size=kernel_size,
+            padding=padding,
         )
-        self.lin_comb = nn.Linear(self.hidden_channel, 1)
+        self.lin_comb = nn.Linear(hidden_channel, 1)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, sig):

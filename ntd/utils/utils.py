@@ -8,6 +8,7 @@ import wandb
 from einops import rearrange
 from omegaconf import OmegaConf as OC
 from scipy import signal
+from sklearn.metrics import f1_score
 
 ### Util functions
 
@@ -391,6 +392,32 @@ def filter_squares(signals_high, high_wn, filter_order=100, fs=600):
     squared_filter_std = np.std(filtered_squares)
 
     return filtered_squares, squared_filter_mean, squared_filter_std
+
+
+def swr_detected(lst_of_swr_ls):
+    """
+    Check if list of sharp wave ripples is empty or not and return a binary array
+    """
+    return np.array([0 if not swr_ls else 1 for swr_ls in lst_of_swr_ls])
+
+
+def permutation_test(real_swrs, generated_swrs, num_permutations, eval_func=f1_score):
+    """
+    Perform a permutation test given two sets of sharp wave ripples,
+    to check whether predictions are better than chance
+    """
+    real_detected = swr_detected(real_swrs)
+    generated_detected = swr_detected(generated_swrs)
+    f1 = eval_func(real_detected, generated_detected)
+
+    perm_f1s = np.zeros(num_permutations)
+    for i in range(num_permutations):
+        perm = np.random.permutation(len(real_detected))
+        perm_f1s[i] = eval_func(real_detected[perm], generated_detected)
+
+    p_val = (np.sum(f1 < perm_f1s) + 1) / (num_permutations + 1)
+
+    return f1, perm_f1s, p_val
 
 
 ### Loading and saving
