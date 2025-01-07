@@ -3,8 +3,8 @@ signal_channel: 56
 time_dim: 16
 cond_channel: 0
 hidden_channel: 16
-in_kernel_size: 1
-out_kernel_size: 1
+in_kernel_size: 65
+out_kernel_size: 65
 slconv_kernel_size: 65
 num_scales: 1
 heads: 1

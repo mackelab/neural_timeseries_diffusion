@@ -5,7 +5,7 @@ cond_channel: 0
 hidden_channel: 64
 in_kernel_size: 32
 out_kernel_size: 32
-slconv_kernel_size: 64
+slconv_kernel_size: 32
 num_scales: 5
 heads: 3
 num_blocks: 3
